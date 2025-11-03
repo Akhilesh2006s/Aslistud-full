@@ -116,6 +116,7 @@ export default function SuperAdminDashboard() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Admin summary data:', data); // Debug log
         if (data.success && Array.isArray(data.data)) {
           setAdminSummary(data.data);
         } else if (Array.isArray(data)) {
@@ -445,26 +446,33 @@ export default function SuperAdminDashboard() {
             <UsersIcon className="h-5 w-5 text-blue-500" />
             <h2 className="text-xl font-bold text-gray-900">Students per Admin</h2>
             <Badge className="bg-blue-100 text-blue-700">
-              Total: {adminSummary.reduce((sum, admin) => sum + (admin.totalStudents || 0), 0)} students
+              Total: {adminSummary.reduce((sum, admin) => {
+                const count = admin.totalStudents || admin.stats?.students || admin.students || 0;
+                return sum + count;
+              }, 0)} students
             </Badge>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {adminSummary.map((admin) => (
-              <Card key={admin.id || admin._id} className="border-l-4 border-l-blue-500">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{admin.name || admin.fullName}</h3>
-                      <p className="text-sm text-gray-600">{admin.email}</p>
+            {adminSummary.map((admin) => {
+              // Handle different API response structures
+              const studentCount = admin.totalStudents || admin.stats?.students || admin.students || 0;
+              return (
+                <Card key={admin.id || admin._id} className="border-l-4 border-l-blue-500">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900">{admin.name || admin.fullName}</h3>
+                        <p className="text-sm text-gray-600">{admin.email}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-blue-600">{studentCount}</p>
+                        <p className="text-xs text-gray-500">students</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-blue-600">{admin.totalStudents || 0}</p>
-                      <p className="text-xs text-gray-500">students</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
